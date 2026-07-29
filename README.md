@@ -1,5 +1,5 @@
 
-# TechService - Lenilton Jr modificado
+# TechService - André Augusto
 
 ## Sistema de Gestão de Assistência Técnica
 

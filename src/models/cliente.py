@@ -21,7 +21,7 @@ class Cliente:
     def inserir_cliente(self, repo):
         return repo.inserir(self)
 
-    def editar_cliente(self, repo):
+    def atualizar_cliente(self, repo):
         return repo.atualizar(self)
 
     def excluir_cliente(self, repo):

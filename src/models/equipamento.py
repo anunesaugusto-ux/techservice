@@ -20,8 +20,14 @@ class Equipamento:
         self.data_compra = data_compra
         self.status = status
 
-    def criar_equipamento(self, repo):
-        return repo.criar(self)
+    def inserir_equipamento(self, repo):
+        return repo.inserir(self)
 
-    def editar_equipamento(self, repo):
+    def atualizar_equipamento(self, repo):
         return repo.atualizar(self)
+
+    def excluir_equipamento(self, repo):
+        return repo.excluir(self.id_equipamento)
+
+    def pesquisar_equipamento(self, repo, id_equipamento):
+        return repo.pesquisar(id_equipamento)

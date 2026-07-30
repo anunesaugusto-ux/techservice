@@ -18,14 +18,14 @@ class Cliente:
         self.morada = morada
         self.status = status
 
-    def criar_cliente(self, repo):
-        return repo.criar(self)
+    def inserir_cliente(self, repo):
+        return repo.inserir(self)
 
     def editar_cliente(self, repo):
         return repo.atualizar(self)
 
-    def remover_cliente(self, repo):
-        return repo.remover(self.id_cliente)
+    def excluir_cliente(self, repo):
+        return repo.excluir(self.id_cliente)
 
     def pesquisar_cliente(self, repo, id_cliente):
         return repo.pesquisar(id_cliente)

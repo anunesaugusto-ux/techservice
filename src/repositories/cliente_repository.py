@@ -1,14 +1,15 @@
 from src.database.conexao import conectar
 
+
 def inserir(cliente):
     conexao = conectar()
     cursor = conexao.cursor()
 
     sql = """
-        INSERT INTO clientes (nome, email, telefone)
-        VALUES (%s, %s, %s)
+        INSERT INTO clientes (nome, email, telefone, nif, morada)
+        VALUES (%s, %s, %s, %s, %s)
     """
-    valores = (cliente.nome, cliente.email, cliente.telefone)
+    valores = (cliente.nome, cliente.email, cliente.telefone, cliente.nif, cliente.morada)
 
     cursor.execute(sql, valores)
     conexao.commit()
@@ -18,12 +19,13 @@ def inserir(cliente):
     conexao.close()
     return cliente
 
+
 def listar():
     conexao = conectar()
     cursor = conexao.cursor(dictionary=True)
 
     sql = """
-        SELECT id_cliente, nome, email, telefone, status,
+        SELECT id_cliente, nome, email, telefone, nif, morada, status,
                created_at, updated_at, deleted_at
         FROM clientes
         WHERE status = 1
@@ -37,6 +39,27 @@ def listar():
     conexao.close()
     return clientes
 
+
+def pesquisar(id_cliente):
+    conexao = conectar()
+    cursor = conexao.cursor(dictionary=True)
+
+    sql = """
+        SELECT id_cliente, nome, email, telefone, nif, morada, status,
+               created_at, updated_at, deleted_at
+        FROM clientes
+        WHERE id_cliente = %s
+          AND status = 1
+    """
+
+    cursor.execute(sql, (id_cliente,))
+    cliente = cursor.fetchone()
+
+    cursor.close()
+    conexao.close()
+    return cliente
+
+
 def atualizar(cliente):
     conexao = conectar()
     cursor = conexao.cursor()
@@ -46,17 +69,27 @@ def atualizar(cliente):
         SET nome = %s,
             email = %s,
             telefone = %s,
+            nif = %s,
+            morada = %s,
             updated_at = NOW()
         WHERE id_cliente = %s
           AND status = 1
     """
-    valores = (cliente.nome, cliente.email, cliente.telefone, cliente.id_cliente)
+    valores = (
+        cliente.nome,
+        cliente.email,
+        cliente.telefone,
+        cliente.nif,
+        cliente.morada,
+        cliente.id_cliente,
+    )
 
     cursor.execute(sql, valores)
     conexao.commit()
 
     cursor.close()
     conexao.close()
+
 
 def excluir(id_cliente):
     conexao = conectar()

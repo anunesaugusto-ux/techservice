@@ -40,7 +40,7 @@ while True:
         else:
             for c in clientes:
                 print(
-                    f"ID: {c['id_cliente']} | Nome: {c['nome']} | Email: {c['email']} | NIF: {c['nif']}"
+                    f"ID: {c['id_cliente']} | Nome: {c['nome']} | Email: {c['email']} | NIF: {c['nif']} | Telefone: {c['telefone']} | Morada: {c['morada']}"
                 )
 
     elif opcao == "3":
@@ -61,7 +61,7 @@ while True:
         print("\n--- EDITAR CLIENTE ---")
         id_cliente = int(input("ID do Cliente a editar: "))
         
-        # Opcional: verificar se existe antes de editar
+
         existente = pesquisar(id_cliente)
         if not existente:
             print("Cliente não encontrado.")

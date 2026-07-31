@@ -20,5 +20,11 @@ class HistoricoOrdem:
         self.data_alteracao = datetime.now()
         self.usuario = usuario
 
-    def consultar_historico_ordem(self, repo, id_ordem):
+    def consultar_historico(self, repo, id_ordem):
         return repo.listar_por_ordem(id_ordem)
+
+    def inserir_historico(self, repo):
+        repo.inserir(self)
+
+    def atualizar_historico(self, repo):
+        repo.atualizar(self)

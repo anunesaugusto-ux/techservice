@@ -1,6 +1,7 @@
 from src.models.cliente import Cliente
 from src.models.equipamento import Equipamento
 from src.models.ordem_servico import OrdemServico
+from src.models.historico_ordem import HistoricoOrdem
 
 # Repositório do Cliente
 from src.repositories.cliente_repository import (
@@ -29,11 +30,19 @@ from src.repositories.ordem_servico_repository import (
     excluir as excluir_os_db,
 )
 
+# Repositório do Histórico
+from src.repositories.historico_ordem_repository import (
+    inserir as inserir_historico_db,
+    atualizar as atualizar_historico_db,
+    listar_por_ordem as listar_historico_db,
+)
+
 while True:
     print("\n===== MENU TECHSERVICE =====")
     print("1. Gestão de Clientes")
     print("2. Gestão de Equipamentos")
     print("3. Gestão de Ordens de Serviço")
+    print("4. Gestão de Histórico de O.S.")
     print("0 - Sair")
 
     escolha_principal = input("Escolha uma opção: ")
@@ -373,6 +382,82 @@ while True:
                 id_ordem = int(input("ID da Ordem de Serviço a remover: "))
                 excluir_os_db(id_ordem)
                 print("Ordem de Serviço removida com sucesso!")
+
+            elif opcao == "0":
+                break
+            else:
+                print("Opção inválida!")
+
+    elif escolha_principal == "4":
+        while True:
+            print("\n--- MENU HISTÓRICO DE O.S. ---")
+            print("1. Criar Registo de Histórico")
+            print("2. Pesquisar Histórico por O.S.")
+            print("3. Atualizar Registo de Histórico")
+            print("0 - Voltar ao Menu Principal")
+
+            opcao = input("Escolha uma opção: ")
+
+            if opcao == "1":
+                print("\n--- CRIAR HISTÓRICO ---")
+                id_ordem = int(input("ID da Ordem de Serviço: "))
+                
+                os_existente = pesquisar_os_db(id_ordem)
+                if not os_existente:
+                    print("Erro: A Ordem de Serviço não existe.")
+                    continue
+
+                status_anterior = input("Status Anterior (ou deixe vazio): ") or None
+                status_novo = input("Status Novo: ")
+                observacao = input("Observação: ") or None
+                usuario = input("Utilizador responsável: ") or "Sistema"
+
+                hist = HistoricoOrdem(
+                    id_ordem=id_ordem,
+                    status_anterior=status_anterior,
+                    status_novo=status_novo,
+                    observacao=observacao,
+                    usuario=usuario
+                )
+                inserir_historico_db(hist)
+                print(f"Histórico criado com sucesso! ID atribuído: {hist.id_historico}")
+
+            elif opcao == "2":
+                print("\n--- PESQUISAR HISTÓRICO POR O.S. ---")
+                id_ordem = int(input("ID da Ordem de Serviço: "))
+                
+                historico = listar_historico_db(id_ordem)
+                if not historico:
+                    print("Não existe histórico registado para esta Ordem de Serviço.")
+                else:
+                    print(f"\nHistórico da OS #{id_ordem}:")
+                    for h in historico:
+                        print("-" * 50)
+                        print(f"ID Histórico: {h['id_historico']} | Data: {h['data_alteracao']} | Utilizador: {h['usuario']}")
+                        print(f"De: [{h['status_anterior'] or 'Início'}] ---> Para: [{h['status_novo']}]")
+                        if h['observacao']:
+                            print(f"Observação: {h['observacao']}")
+
+            elif opcao == "3":
+                print("\n--- ATUALIZAR HISTÓRICO ---")
+                id_historico = int(input("ID do Registo de Histórico a atualizar: "))
+                id_ordem = int(input("ID da Ordem de Serviço associada: "))
+                
+                status_anterior = input("Status Anterior: ") or None
+                status_novo = input("Status Novo: ")
+                observacao = input("Nova Observação: ") or None
+                usuario = input("Utilizador: ") or "Sistema"
+
+                hist = HistoricoOrdem(
+                    id_ordem=id_ordem,
+                    status_anterior=status_anterior,
+                    status_novo=status_novo,
+                    observacao=observacao,
+                    usuario=usuario,
+                    id_historico=id_historico
+                )
+                atualizar_historico_db(hist)
+                print("Histórico atualizado com sucesso!")
 
             elif opcao == "0":
                 break

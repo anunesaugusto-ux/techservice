@@ -1,8 +1,6 @@
 from datetime import datetime
 
-
 class OrdemServico:
-
     def __init__(
         self,
         id_equipamento,
@@ -16,12 +14,15 @@ class OrdemServico:
         desconto=0.00,
         valor_total=0.00,
         observacoes=None,
+        id_cliente=None,  
+        data_abertura=None,
         status_registo=1,
         id_ordem=None,
     ):
         self.id_ordem = id_ordem
         self.id_equipamento = id_equipamento
-        self.data_abertura = datetime.now()
+        self.id_cliente = id_cliente
+        self.data_abertura = data_abertura if data_abertura else datetime.now()
         self.status = status
         self.prioridade = prioridade
         self.defeito_relatado = defeito_relatado
@@ -34,12 +35,14 @@ class OrdemServico:
         self.observacoes = observacoes
         self.status_registo = status_registo
 
-    def abrir_ordem_servico(self, repo):
-        return repo.criar(self)
+    def inserir_ordem(self, repo):
+        return repo.inserir(self)
 
-    def alterar_estado_ordem(self, repo, novo_status):
-        self.status = novo_status
-        return repo.atualizar_status(self.id_ordem, novo_status)
+    def atualizar_ordem(self, repo):
+        return repo.atualizar(self)
 
-    def listar_ordens_servico(self, repo):
-        return repo.listar()
+    def excluir_ordem(self, repo):
+        return repo.excluir(self.id_ordem)
+
+    def pesquisar_ordem(self, repo, id_ordem):
+        return repo.pesquisar(id_ordem)

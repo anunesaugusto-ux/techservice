@@ -1,5 +1,6 @@
 from src.models.cliente import Cliente
 from src.models.equipamento import Equipamento
+from src.models.ordem_servico import OrdemServico
 
 # Repositório do Cliente
 from src.repositories.cliente_repository import (
@@ -19,10 +20,20 @@ from src.repositories.equipamento_repository import (
     excluir as excluir_equipamento_db,
 )
 
+# Repositório da Ordem de Serviço
+from src.repositories.ordem_servico_repository import (
+    inserir as inserir_os_db,
+    listar as listar_os_db,
+    pesquisar as pesquisar_os_db,
+    atualizar as atualizar_os_db,
+    excluir as excluir_os_db,
+)
+
 while True:
-    print("\n===== MENU PRINCIPAL =====")
+    print("\n===== MENU TECHSERVICE =====")
     print("1. Gestão de Clientes")
     print("2. Gestão de Equipamentos")
+    print("3. Gestão de Ordens de Serviço")
     print("0 - Sair")
 
     escolha_principal = input("Escolha uma opção: ")
@@ -130,6 +141,13 @@ while True:
             if opcao == "1":
                 print("\n--- CRIAR EQUIPAMENTO ---")
                 id_cliente = int(input("ID do Cliente dono do equipamento: "))
+                
+                # Validação para garantir que o cliente existe
+                cliente_existente = pesquisar_cliente_db(id_cliente)
+                if not cliente_existente or cliente_existente.get('status_registo', 1) == 0:
+                    print("Erro: O cliente não existe.")
+                    continue
+
                 tipo = input("Tipo: ")
                 marca = input("Marca: ")
                 modelo = input("Modelo: ")
@@ -206,6 +224,155 @@ while True:
                 id_equipamento = int(input("ID do Equipamento a remover: "))
                 excluir_equipamento_db(id_equipamento)
                 print("Equipamento removido com sucesso!")
+
+            elif opcao == "0":
+                break
+            else:
+                print("Opção inválida!")
+
+    elif escolha_principal == "3":
+        while True:
+            print("\n--- MENU ORDEM DE SERVIÇO ---")
+            print("1. Criar Ordem de Serviço")
+            print("2. Listar Ordens de Serviço")
+            print("3. Pesquisar Ordem de Serviço")
+            print("4. Editar Ordem de Serviço")
+            print("5. Remover Ordem de Serviço")
+            print("0 - Voltar ao Menu Principal")
+
+            opcao = input("Escolha uma opção: ")
+
+            if opcao == "1":
+                print("\n--- CRIAR ORDEM DE SERVIÇO ---")
+                id_equipamento = int(input("ID do Equipamento: "))
+                
+                # Validação para garantir que o equipamento existe
+                equipamento_existente = pesquisar_equipamento_db(id_equipamento)
+                if not equipamento_existente or equipamento_existente.get('status_registo', 1) == 0:
+                    print("Erro: O equipamento não existe.")
+                    continue
+
+                defeito_relatado = input("Defeito Relatado: ")
+                prioridade = input("Prioridade (BAIXA / MEDIA / ALTA) [MEDIA]: ") or "MEDIA"
+                status = input("Status (ABERTA / EM ANDAMENTO / AGUARDANDO PECAS / CONCLUIDA) [ABERTA]: ") or "ABERTA"
+                
+                diagnostico = input("Diagnóstico: ") or None
+                solucao = input("Solução: ") or None
+                
+                valor_servico = float(input("Valor do Serviço [0.00]: ") or 0.00)
+                valor_pecas = float(input("Valor das Peças [0.00]: ") or 0.00)
+                desconto_percentagem = float(input("Desconto em percentagem (ex: 10 para 10%) [0.00]: ") or 0.00)
+                
+                # Cálculo automático do total
+                subtotal = valor_servico + valor_pecas
+                desconto = subtotal * (desconto_percentagem / 100)
+                valor_total = subtotal - desconto
+                
+                observacoes = input("Observações: ") or None
+
+                os_obj = OrdemServico(
+                    id_equipamento=id_equipamento,
+                    defeito_relatado=defeito_relatado,
+                    prioridade=prioridade,
+                    status=status,
+                    diagnostico=diagnostico,
+                    solucao=solucao,
+                    valor_servico=valor_servico,
+                    valor_pecas=valor_pecas,
+                    desconto=desconto,
+                    valor_total=valor_total,
+                    observacoes=observacoes
+                )
+                inserir_os_db(os_obj)
+                print(f"Ordem de Serviço criada com sucesso! ID atribuído: {os_obj.id_ordem} | Valor Total: {valor_total:.2f}€")
+
+            elif opcao == "2":
+                print("\n--- LISTA DE ORDENS DE SERVIÇO ---")
+                ordens = listar_os_db()
+                if not ordens:
+                    print("Nenhuma ordem de serviço encontrada.")
+                else:
+                    for o in ordens:
+                        print(
+                            f"ID OS: {o['id_ordem']} | Cliente ID: {o['id_cliente']} | Equipamento ID: {o['id_equipamento']} | Status: {o['status']} | Prioridade: {o['prioridade']} | Defeito: {o['defeito_relatado']}"
+                        )
+
+            elif opcao == "3":
+                print("\n--- PESQUISAR ORDEM DE SERVIÇO ---")
+                id_ordem = int(input("ID da Ordem de Serviço a pesquisar: "))
+                o = pesquisar_os_db(id_ordem)
+                if o:
+                    print(f"\nOrdem de Serviço Encontrada:")
+                    print(f"Cliente ID: {o['id_cliente']}")
+                    print(f"Equipamento ID: {o['id_equipamento']}")
+                    print(f"Data Abertura: {o['data_abertura']}")
+                    print(f"Status: {o['status']}")
+                    print(f"Prioridade: {o['prioridade']}")
+                    print(f"Defeito Relatado: {o['defeito_relatado']}")
+                    print(f"Diagnóstico: {o['diagnostico']}")
+                    print(f"Solução: {o['solucao']}")
+                    print(f"Valor Serviço: {o['valor_servico']}€")
+                    print(f"Valor Peças: {o['valor_pecas']}€")
+                    print(f"Desconto (Valor): {o['desconto']}€")
+                    print(f"Valor Total: {o['valor_total']}€")
+                    print(f"Observações: {o['observacoes']}")
+                else:
+                    print("Ordem de serviço não encontrada.")
+
+            elif opcao == "4":
+                print("\n--- EDITAR ORDEM DE SERVIÇO ---")
+                id_ordem = int(input("ID da Ordem de Serviço a editar: "))
+
+                existente = pesquisar_os_db(id_ordem)
+                if not existente:
+                    print("Ordem de serviço não encontrada.")
+                    continue
+
+                status = input(f"Novo Status [{existente['status']}]: ") or existente['status']
+                prioridade = input(f"Nova Prioridade [{existente['prioridade']}]: ") or existente['prioridade']
+                defeito_relatado = input(f"Novo Defeito Relatado [{existente['defeito_relatado']}]: ") or existente['defeito_relatado']
+                diagnostico = input(f"Novo Diagnóstico [{existente['diagnostico']}]: ") or existente['diagnostico']
+                solucao = input(f"Nova Solução [{existente['solucao']}]: ") or existente['solucao']
+                
+                valor_servico = float(input(f"Novo Valor Serviço [{existente['valor_servico']}]: ") or existente['valor_servico'])
+                valor_pecas = float(input(f"Novo Valor Peças [{existente['valor_pecas']}]: ") or existente['valor_pecas'])
+                
+                desconto_percentagem_atual = 0.0
+                subtotal_existente = existente['valor_servico'] + existente['valor_pecas']
+                if subtotal_existente > 0:
+                    desconto_percentagem_atual = (existente['desconto'] / subtotal_existente) * 100
+
+                desconto_percentagem = float(input(f"Novo Desconto em percentagem [{desconto_percentagem_atual:.1f}%]: ") or desconto_percentagem_atual)
+                
+                # Cálculo automático do total na edição
+                subtotal = valor_servico + valor_pecas
+                desconto = subtotal * (desconto_percentagem / 100)
+                valor_total = subtotal - desconto
+
+                observacoes = input(f"Novas Observações [{existente['observacoes']}]: ") or existente['observacoes']
+
+                os_obj = OrdemServico(
+                    id_equipamento=existente['id_equipamento'],
+                    defeito_relatado=defeito_relatado,
+                    prioridade=prioridade,
+                    status=status,
+                    diagnostico=diagnostico,
+                    solucao=solucao,
+                    valor_servico=valor_servico,
+                    valor_pecas=valor_pecas,
+                    desconto=desconto,
+                    valor_total=valor_total,
+                    observacoes=observacoes,
+                    id_ordem=id_ordem,
+                )
+                atualizar_os_db(os_obj)
+                print(f"Ordem de Serviço atualizada com sucesso! Novo Total: {valor_total:.2f}€")
+
+            elif opcao == "5":
+                print("\n--- REMOVER ORDEM DE SERVIÇO ---")
+                id_ordem = int(input("ID da Ordem de Serviço a remover: "))
+                excluir_os_db(id_ordem)
+                print("Ordem de Serviço removida com sucesso!")
 
             elif opcao == "0":
                 break
